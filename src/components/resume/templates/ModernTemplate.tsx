@@ -20,7 +20,7 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {personalInfo.firstName} {personalInfo.lastName}
+          {personalInfo.fullName}
         </h1>
         
         <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
@@ -48,10 +48,10 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
               <span>{personalInfo.website}</span>
             </div>
           )}
-          {personalInfo.linkedin && (
+          {personalInfo.github && (
             <div className="flex items-center gap-1">
-              <Linkedin className="h-4 w-4" />
-              <span>{personalInfo.linkedin}</span>
+              <Globe className="h-4 w-4" />
+              <span>{personalInfo.github}</span>
             </div>
           )}
         </div>
@@ -74,7 +74,7 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
               <div key={exp.id}>
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{exp.jobTitle}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">{exp.position}</h3>
                     <p className="text-blue-600 font-medium">{exp.company}</p>
                   </div>
                   <div className="text-right text-sm text-gray-600">
@@ -114,17 +114,13 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{edu.degree}</h3>
                     <p className="text-blue-600 font-medium">{edu.institution}</p>
-                    <p className="text-gray-600">{edu.fieldOfStudy}</p>
+                    <p className="text-gray-600">{edu.field}</p>
                   </div>
                   <div className="text-right text-sm text-gray-600">
                     <p>{formatDate(edu.startDate)} - {formatDate(edu.endDate)}</p>
-                    <p>{edu.location}</p>
                     {edu.gpa && <p>GPA: {edu.gpa}</p>}
                   </div>
                 </div>
-                {edu.description && (
-                  <p className="text-gray-700 mb-2">{edu.description}</p>
-                )}
                 {edu.achievements && edu.achievements.length > 0 && (
                   <ul className="space-y-1">
                     {edu.achievements.map((achievement, index) => (
@@ -148,21 +144,23 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
             Skills
           </h2>
           <div className="space-y-4">
-            {skills.map((skillCategory) => (
-              <div key={skillCategory.id}>
-                <h3 className="font-semibold text-gray-900 mb-2">{skillCategory.category}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {skillCategory.items.map((skill, index) => (
-                    <span 
-                      key={index}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                    >
-                      {skill.name}
-                      {skill.level && skill.level !== 'Intermediate' && (
-                        <span className="text-blue-600 ml-1">({skill.level})</span>
-                      )}
-                    </span>
-                  ))}
+            {skills.map((skill) => (
+              <div key={skill.id} className="flex justify-between items-center">
+                <span className="font-medium text-gray-900">{skill.name}</span>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                    {skill.category}
+                  </span>
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-2 h-2 rounded-full ${
+                          i < skill.level ? 'bg-blue-600' : 'bg-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -203,23 +201,18 @@ export function ModernTemplate({ data }: ModernTemplateProps) {
           <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-600">
             {section.title}
           </h2>
-          <div className="space-y-4">
-            {section.items.map((item, index) => (
-              <div key={index}>
-                <div className="flex justify-between items-start mb-1">
-                  <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                  {item.date && (
-                    <span className="text-sm text-gray-600">{item.date}</span>
-                  )}
-                </div>
-                {item.subtitle && (
-                  <p className="text-blue-600 font-medium mb-1">{item.subtitle}</p>
-                )}
-                {item.description && (
-                  <p className="text-gray-700">{item.description}</p>
-                )}
-              </div>
-            ))}
+          <div className="text-gray-700">
+            <p className="mb-2">{section.content}</p>
+            {section.items && section.items.length > 0 && (
+              <ul className="space-y-1">
+                {section.items.map((item, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-blue-600 mr-2">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </section>
       ))}

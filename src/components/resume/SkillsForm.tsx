@@ -16,11 +16,9 @@ import { SortableItem } from '@/components/ui/sortable-item';
 const skillsSchema = z.object({
   skills: z.array(z.object({
     id: z.string(),
-    category: z.string().min(1, 'Category is required'),
-    items: z.array(z.object({
-      name: z.string().min(1, 'Skill name is required'),
-      level: z.enum(['Beginner', 'Intermediate', 'Advanced', 'Expert']).optional()
-    })).min(1, 'At least one skill is required')
+    name: z.string().min(1, 'Skill name is required'),
+    category: z.enum(['technical', 'soft', 'language', 'other']),
+    level: z.number().min(1).max(5)
   }))
 });
 
@@ -32,7 +30,7 @@ interface SkillsFormProps {
 export function SkillsForm({ data, onChange }: SkillsFormProps) {
   const form = useForm({
     resolver: zodResolver(skillsSchema),
-    defaultValues: { skills: data.length > 0 ? data : [createNewSkillCategory()] },
+    defaultValues: { skills: data.length > 0 ? data : [createNewSkill()] },
     mode: 'onChange'
   });
 
@@ -55,11 +53,12 @@ export function SkillsForm({ data, onChange }: SkillsFormProps) {
     return () => subscription.unsubscribe();
   }, [form, onChange]);
 
-  function createNewSkillCategory(): Skill {
+  function createNewSkill(): Skill {
     return {
       id: Date.now().toString(),
-      category: '',
-      items: [{ name: '', level: 'Intermediate' }]
+      name: '',
+      category: 'technical',
+      level: 3
     };
   }
 
@@ -74,16 +73,14 @@ export function SkillsForm({ data, onChange }: SkillsFormProps) {
     }
   };
 
-  const addSkillItem = (categoryIndex: number) => {
-    const items = form.getValues(`skills.${categoryIndex}.items`) || [];
-    form.setValue(`skills.${categoryIndex}.items`, [...items, { name: '', level: 'Intermediate' }]);
-  };
-
-  const removeSkillItem = (categoryIndex: number, itemIndex: number) => {
-    const items = form.getValues(`skills.${categoryIndex}.items`) || [];
-    if (items.length > 1) {
-      const updated = items.filter((_, i) => i !== itemIndex);
-      form.setValue(`skills.${categoryIndex}.items`, updated);
+  const getLevelText = (level: number) => {
+    switch (level) {
+      case 1: return 'Beginner';
+      case 2: return 'Basic';
+      case 3: return 'Intermediate';
+      case 4: return 'Advanced';
+      case 5: return 'Expert';
+      default: return 'Intermediate';
     }
   };
 
@@ -95,11 +92,11 @@ export function SkillsForm({ data, onChange }: SkillsFormProps) {
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => append(createNewSkillCategory())}
+          onClick={() => append(createNewSkill())}
           className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          Add Category
+          Add Skill
         </Button>
       </div>
 
@@ -111,14 +108,14 @@ export function SkillsForm({ data, onChange }: SkillsFormProps) {
         >
           <SortableContext items={fields} strategy={verticalListSortingStrategy}>
             <div className="space-y-4">
-              {fields.map((field, categoryIndex) => (
+              {fields.map((field, index) => (
                 <SortableItem key={field.id} id={field.id}>
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <div className="flex items-center gap-2">
                         <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
                         <CardTitle className="text-base">
-                          Skill Category {categoryIndex + 1}
+                          Skill {index + 1}
                         </CardTitle>
                       </div>
                       {fields.length > 1 && (
@@ -126,7 +123,7 @@ export function SkillsForm({ data, onChange }: SkillsFormProps) {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => remove(categoryIndex)}
+                          onClick={() => remove(index)}
                           className="text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -134,87 +131,75 @@ export function SkillsForm({ data, onChange }: SkillsFormProps) {
                       )}
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name={`skills.${categoryIndex}.category`}
-                        render={({ field: formField }) => (
-                          <FormItem>
-                            <FormLabel>Category Name *</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., Programming Languages, Frameworks, Tools" {...formField} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <FormLabel>Skills</FormLabel>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addSkillItem(categoryIndex)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`skills.${index}.name`}
+                          render={({ field: formField }) => (
+                            <FormItem>
+                              <FormLabel>Skill Name *</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g., JavaScript, Leadership, Spanish"
+                                  {...formField}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         
-                        {form.watch(`skills.${categoryIndex}.items`)?.map((_, itemIndex) => (
-                          <div key={itemIndex} className="flex gap-2">
-                            <FormField
-                              control={form.control}
-                              name={`skills.${categoryIndex}.items.${itemIndex}.name`}
-                              render={({ field: formField }) => (
-                                <FormItem className="flex-1">
-                                  <FormControl>
-                                    <Input
-                                      placeholder="e.g., JavaScript, React, Node.js"
-                                      {...formField}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name={`skills.${categoryIndex}.items.${itemIndex}.level`}
-                              render={({ field: formField }) => (
-                                <FormItem className="w-32">
-                                  <Select onValueChange={formField.onChange} defaultValue={formField.value}>
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Level" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="Beginner">Beginner</SelectItem>
-                                      <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                      <SelectItem value="Advanced">Advanced</SelectItem>
-                                      <SelectItem value="Expert">Expert</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                        <FormField
+                          control={form.control}
+                          name={`skills.${index}.category`}
+                          render={({ field: formField }) => (
+                            <FormItem>
+                              <FormLabel>Category</FormLabel>
+                              <Select onValueChange={formField.onChange} defaultValue={formField.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select category" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="technical">Technical</SelectItem>
+                                  <SelectItem value="soft">Soft Skills</SelectItem>
+                                  <SelectItem value="language">Language</SelectItem>
+                                  <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                            {form.watch(`skills.${categoryIndex}.items`)?.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => removeSkillItem(categoryIndex, itemIndex)}
-                                className="text-destructive hover:text-destructive"
+                        <FormField
+                          control={form.control}
+                          name={`skills.${index}.level`}
+                          render={({ field: formField }) => (
+                            <FormItem>
+                              <FormLabel>Level</FormLabel>
+                              <Select 
+                                onValueChange={(value) => formField.onChange(parseInt(value))} 
+                                defaultValue={formField.value?.toString()}
                               >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select level" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="1">1 - Beginner</SelectItem>
+                                  <SelectItem value="2">2 - Basic</SelectItem>
+                                  <SelectItem value="3">3 - Intermediate</SelectItem>
+                                  <SelectItem value="4">4 - Advanced</SelectItem>
+                                  <SelectItem value="5">5 - Expert</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     </CardContent>
                   </Card>

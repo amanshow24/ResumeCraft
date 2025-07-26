@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CustomSection } from '@/types/resume';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -17,12 +18,9 @@ const customSectionsSchema = z.object({
   customSections: z.array(z.object({
     id: z.string(),
     title: z.string().min(1, 'Section title is required'),
-    items: z.array(z.object({
-      title: z.string().min(1, 'Item title is required'),
-      subtitle: z.string().optional(),
-      date: z.string().optional(),
-      description: z.string().optional()
-    })).min(1, 'At least one item is required')
+    content: z.string().min(1, 'Content is required'),
+    type: z.enum(['text', 'list', 'grid']),
+    items: z.array(z.string()).optional()
   }))
 });
 
@@ -61,7 +59,9 @@ export function CustomSectionsForm({ data, onChange }: CustomSectionsFormProps) 
     return {
       id: Date.now().toString(),
       title: '',
-      items: [{ title: '', subtitle: '', date: '', description: '' }]
+      content: '',
+      type: 'text',
+      items: []
     };
   }
 
@@ -76,18 +76,20 @@ export function CustomSectionsForm({ data, onChange }: CustomSectionsFormProps) 
     }
   };
 
-  const addSectionItem = (sectionIndex: number) => {
+  const addListItem = (sectionIndex: number) => {
     const items = form.getValues(`customSections.${sectionIndex}.items`) || [];
-    form.setValue(`customSections.${sectionIndex}.items`, [...items, { title: '', subtitle: '', date: '', description: '' }]);
+    form.setValue(`customSections.${sectionIndex}.items`, [...items, '']);
   };
 
-  const removeSectionItem = (sectionIndex: number, itemIndex: number) => {
+  const removeListItem = (sectionIndex: number, itemIndex: number) => {
     const items = form.getValues(`customSections.${sectionIndex}.items`) || [];
     if (items.length > 1) {
       const updated = items.filter((_, i) => i !== itemIndex);
       form.setValue(`customSections.${sectionIndex}.items`, updated);
     }
   };
+
+  const watchType = (index: number) => form.watch(`customSections.${index}.type`);
 
   return (
     <div className="space-y-6">
@@ -158,117 +160,109 @@ export function CustomSectionsForm({ data, onChange }: CustomSectionsFormProps) 
                       </Button>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`customSections.${sectionIndex}.title`}
+                          render={({ field: formField }) => (
+                            <FormItem>
+                              <FormLabel>Section Title *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., Projects, Certifications, Publications" {...formField} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`customSections.${sectionIndex}.type`}
+                          render={({ field: formField }) => (
+                            <FormItem>
+                              <FormLabel>Type</FormLabel>
+                              <Select onValueChange={formField.onChange} defaultValue={formField.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select type" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="text">Text</SelectItem>
+                                  <SelectItem value="list">List</SelectItem>
+                                  <SelectItem value="grid">Grid</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
                       <FormField
                         control={form.control}
-                        name={`customSections.${sectionIndex}.title`}
+                        name={`customSections.${sectionIndex}.content`}
                         render={({ field: formField }) => (
                           <FormItem>
-                            <FormLabel>Section Title *</FormLabel>
+                            <FormLabel>Content *</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g., Projects, Certifications, Publications" {...formField} />
+                              <Textarea
+                                placeholder="Main content for this section..."
+                                className="min-h-[100px]"
+                                {...formField}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
 
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <FormLabel>Section Items</FormLabel>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addSectionItem(sectionIndex)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
+                      {(watchType(sectionIndex) === 'list' || watchType(sectionIndex) === 'grid') && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <FormLabel>Items</FormLabel>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => addListItem(sectionIndex)}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          
+                          {form.watch(`customSections.${sectionIndex}.items`)?.map((_, itemIndex) => (
+                            <div key={itemIndex} className="flex gap-2">
+                              <FormField
+                                control={form.control}
+                                name={`customSections.${sectionIndex}.items.${itemIndex}`}
+                                render={({ field: formField }) => (
+                                  <FormItem className="flex-1">
+                                    <FormControl>
+                                      <Input
+                                        placeholder="List item..."
+                                        {...formField}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              {(form.watch(`customSections.${sectionIndex}.items`)?.length || 0) > 0 && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => removeListItem(sectionIndex, itemIndex)}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                        
-                        {form.watch(`customSections.${sectionIndex}.items`)?.map((_, itemIndex) => (
-                          <Card key={itemIndex} className="border-l-4 border-l-primary/20">
-                            <CardContent className="pt-4">
-                              <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                  <h4 className="text-sm font-medium">Item {itemIndex + 1}</h4>
-                                  {form.watch(`customSections.${sectionIndex}.items`)?.length > 1 && (
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => removeSectionItem(sectionIndex, itemIndex)}
-                                      className="text-destructive hover:text-destructive"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  )}
-                                </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <FormField
-                                    control={form.control}
-                                    name={`customSections.${sectionIndex}.items.${itemIndex}.title`}
-                                    render={({ field: formField }) => (
-                                      <FormItem>
-                                        <FormLabel>Title *</FormLabel>
-                                        <FormControl>
-                                          <Input placeholder="e.g., Project Name, Certificate Title" {...formField} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-
-                                  <FormField
-                                    control={form.control}
-                                    name={`customSections.${sectionIndex}.items.${itemIndex}.subtitle`}
-                                    render={({ field: formField }) => (
-                                      <FormItem>
-                                        <FormLabel>Subtitle</FormLabel>
-                                        <FormControl>
-                                          <Input placeholder="e.g., Organization, Technology Used" {...formField} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-
-                                  <FormField
-                                    control={form.control}
-                                    name={`customSections.${sectionIndex}.items.${itemIndex}.date`}
-                                    render={({ field: formField }) => (
-                                      <FormItem className="md:col-span-2">
-                                        <FormLabel>Date</FormLabel>
-                                        <FormControl>
-                                          <Input placeholder="e.g., 2023, June 2023, 2022-2023" {...formField} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-
-                                <FormField
-                                  control={form.control}
-                                  name={`customSections.${sectionIndex}.items.${itemIndex}.description`}
-                                  render={({ field: formField }) => (
-                                    <FormItem>
-                                      <FormLabel>Description</FormLabel>
-                                      <FormControl>
-                                        <Textarea
-                                          placeholder="Brief description of the project, certification, or achievement..."
-                                          {...formField}
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
+                      )}
                     </CardContent>
                   </Card>
                 </SortableItem>

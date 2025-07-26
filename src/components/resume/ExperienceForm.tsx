@@ -19,13 +19,13 @@ import { SortableItem } from '@/components/ui/sortable-item';
 const experienceSchema = z.object({
   experience: z.array(z.object({
     id: z.string(),
-    jobTitle: z.string().min(1, 'Job title is required'),
+    position: z.string().min(1, 'Position is required'),
     company: z.string().min(1, 'Company is required'),
     location: z.string().min(1, 'Location is required'),
     startDate: z.string().min(1, 'Start date is required'),
-    endDate: z.string().optional(),
+    endDate: z.string().min(1, 'End date is required'),
     current: z.boolean().default(false),
-    description: z.string().optional(),
+    description: z.string().min(1, 'Description is required'),
     achievements: z.array(z.string()).default([])
   }))
 });
@@ -67,7 +67,7 @@ export function ExperienceForm({ data, onChange }: ExperienceFormProps) {
   function createNewExperience(): Experience {
     return {
       id: Date.now().toString(),
-      jobTitle: '',
+      position: '',
       company: '',
       location: '',
       startDate: '',
@@ -81,10 +81,10 @@ export function ExperienceForm({ data, onChange }: ExperienceFormProps) {
   const handleGenerateAIBulletPoints = async (index: number) => {
     const experienceData = form.getValues(`experience.${index}`);
     
-    if (!experienceData.jobTitle || !experienceData.company) {
+    if (!experienceData.position || !experienceData.company) {
       toast({
         title: "Missing Information",
-        description: "Please enter job title and company first",
+        description: "Please enter position and company first",
         variant: "destructive"
       });
       return;
@@ -195,10 +195,10 @@ export function ExperienceForm({ data, onChange }: ExperienceFormProps) {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
-                          name={`experience.${index}.jobTitle`}
+                          name={`experience.${index}.position`}
                           render={({ field: formField }) => (
                             <FormItem>
-                              <FormLabel>Job Title *</FormLabel>
+                              <FormLabel>Position *</FormLabel>
                               <FormControl>
                                 <Input placeholder="Software Engineer" {...formField} />
                               </FormControl>
@@ -274,7 +274,7 @@ export function ExperienceForm({ data, onChange }: ExperienceFormProps) {
                           name={`experience.${index}.endDate`}
                           render={({ field: formField }) => (
                             <FormItem>
-                              <FormLabel>End Date</FormLabel>
+                              <FormLabel>End Date *</FormLabel>
                               <FormControl>
                                 <Input 
                                   type="month" 
@@ -293,7 +293,7 @@ export function ExperienceForm({ data, onChange }: ExperienceFormProps) {
                         name={`experience.${index}.description`}
                         render={({ field: formField }) => (
                           <FormItem>
-                            <FormLabel>Job Description</FormLabel>
+                            <FormLabel>Job Description *</FormLabel>
                             <FormControl>
                               <Textarea
                                 placeholder="Brief description of your role and responsibilities..."

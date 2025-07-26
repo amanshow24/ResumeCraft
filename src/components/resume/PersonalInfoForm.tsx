@@ -13,13 +13,13 @@ import { generateAISummary } from '@/utils/aiHelpers';
 import { useToast } from '@/hooks/use-toast';
 
 const personalInfoSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  fullName: z.string().min(1, 'Full name is required'),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(1, 'Phone number is required'),
   location: z.string().min(1, 'Location is required'),
   website: z.string().optional(),
   linkedin: z.string().optional(),
+  github: z.string().optional(),
   summary: z.string().optional()
 });
 
@@ -49,9 +49,8 @@ export function PersonalInfoForm({ data, onChange }: PersonalInfoFormProps) {
     setIsGenerating(true);
     try {
       const currentValues = form.getValues();
-      const fullName = `${currentValues.firstName} ${currentValues.lastName}`.trim();
       
-      if (!fullName) {
+      if (!currentValues.fullName) {
         toast({
           title: "Missing Information",
           description: "Please enter your name first",
@@ -89,26 +88,12 @@ export function PersonalInfoForm({ data, onChange }: PersonalInfoFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="firstName"
+                name="fullName"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name *</FormLabel>
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Full Name *</FormLabel>
                     <FormControl>
-                      <Input placeholder="John" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Doe" {...field} />
+                      <Input placeholder="John Doe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -175,10 +160,24 @@ export function PersonalInfoForm({ data, onChange }: PersonalInfoFormProps) {
                 control={form.control}
                 name="linkedin"
                 render={({ field }) => (
-                  <FormItem className="md:col-span-2">
+                  <FormItem>
                     <FormLabel>LinkedIn</FormLabel>
                     <FormControl>
                       <Input placeholder="https://linkedin.com/in/johndoe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="github"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>GitHub</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://github.com/johndoe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

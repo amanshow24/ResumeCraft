@@ -18,8 +18,8 @@ const achievementsSchema = z.object({
     id: z.string(),
     title: z.string().min(1, 'Title is required'),
     organization: z.string().optional(),
-    date: z.string().optional(),
-    description: z.string().optional()
+    date: z.string().min(1, 'Date is required'),
+    description: z.string().min(1, 'Description is required')
   }))
 });
 
@@ -156,7 +156,7 @@ export function AchievementsForm({ data, onChange }: AchievementsFormProps) {
                           name={`achievements.${index}.date`}
                           render={({ field: formField }) => (
                             <FormItem className="md:col-span-2">
-                              <FormLabel>Date</FormLabel>
+                              <FormLabel>Date *</FormLabel>
                               <FormControl>
                                 <Input type="month" {...formField} />
                               </FormControl>
@@ -171,7 +171,7 @@ export function AchievementsForm({ data, onChange }: AchievementsFormProps) {
                         name={`achievements.${index}.description`}
                         render={({ field: formField }) => (
                           <FormItem>
-                            <FormLabel>Description</FormLabel>
+                            <FormLabel>Description *</FormLabel>
                             <FormControl>
                               <Textarea
                                 placeholder="Brief description of the achievement and its impact..."

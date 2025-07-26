@@ -20,20 +20,26 @@ import { ArrowLeft, Save, Eye, Download, Share2 } from 'lucide-react';
 
 const defaultResumeData: ResumeData = {
   personalInfo: {
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
     phone: '',
     location: '',
     website: '',
     linkedin: '',
+    github: '',
     summary: ''
   },
   education: [],
   experience: [],
   skills: [],
   achievements: [],
-  customSections: []
+  customSections: [],
+  theme: {
+    fontFamily: 'inter',
+    primaryColor: '#2563eb',
+    headingSize: 'md',
+    template: 'modern'
+  }
 };
 
 export default function ResumeBuilder() {

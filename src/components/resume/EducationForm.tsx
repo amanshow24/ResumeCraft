@@ -18,13 +18,11 @@ const educationSchema = z.object({
     id: z.string(),
     institution: z.string().min(1, 'Institution is required'),
     degree: z.string().min(1, 'Degree is required'),
-    fieldOfStudy: z.string().min(1, 'Field of study is required'),
-    location: z.string().min(1, 'Location is required'),
+    field: z.string().min(1, 'Field of study is required'),
     startDate: z.string().min(1, 'Start date is required'),
-    endDate: z.string().optional(),
+    endDate: z.string().min(1, 'End date is required'),
     gpa: z.string().optional(),
-    achievements: z.array(z.string()).default([]),
-    description: z.string().optional()
+    achievements: z.array(z.string()).default([])
   }))
 });
 
@@ -64,13 +62,11 @@ export function EducationForm({ data, onChange }: EducationFormProps) {
       id: Date.now().toString(),
       institution: '',
       degree: '',
-      fieldOfStudy: '',
-      location: '',
+      field: '',
       startDate: '',
       endDate: '',
       gpa: '',
-      achievements: [],
-      description: ''
+      achievements: []
     };
   }
 
@@ -174,7 +170,7 @@ export function EducationForm({ data, onChange }: EducationFormProps) {
 
                         <FormField
                           control={form.control}
-                          name={`education.${index}.fieldOfStudy`}
+                          name={`education.${index}.field`}
                           render={({ field: formField }) => (
                             <FormItem>
                               <FormLabel>Field of Study *</FormLabel>
@@ -188,12 +184,12 @@ export function EducationForm({ data, onChange }: EducationFormProps) {
 
                         <FormField
                           control={form.control}
-                          name={`education.${index}.location`}
+                          name={`education.${index}.gpa`}
                           render={({ field: formField }) => (
                             <FormItem>
-                              <FormLabel>Location *</FormLabel>
+                              <FormLabel>GPA (Optional)</FormLabel>
                               <FormControl>
-                                <Input placeholder="Berkeley, CA" {...formField} />
+                                <Input placeholder="3.8/4.0" {...formField} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -219,7 +215,7 @@ export function EducationForm({ data, onChange }: EducationFormProps) {
                           name={`education.${index}.endDate`}
                           render={({ field: formField }) => (
                             <FormItem>
-                              <FormLabel>End Date</FormLabel>
+                              <FormLabel>End Date *</FormLabel>
                               <FormControl>
                                 <Input type="month" {...formField} />
                               </FormControl>
@@ -227,38 +223,7 @@ export function EducationForm({ data, onChange }: EducationFormProps) {
                             </FormItem>
                           )}
                         />
-
-                        <FormField
-                          control={form.control}
-                          name={`education.${index}.gpa`}
-                          render={({ field: formField }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel>GPA (Optional)</FormLabel>
-                              <FormControl>
-                                <Input placeholder="3.8/4.0" {...formField} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                       </div>
-
-                      <FormField
-                        control={form.control}
-                        name={`education.${index}.description`}
-                        render={({ field: formField }) => (
-                          <FormItem>
-                            <FormLabel>Description</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Relevant coursework, thesis, or additional details..."
-                                {...formField}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
 
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
