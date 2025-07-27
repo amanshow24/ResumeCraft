@@ -33,7 +33,7 @@ const achievementSchema = z.object({
     organization: z.string().optional(),
     date: z.string().min(1, 'Date is required'),
     description: z.string().min(1, 'Description is required'),
-  }))
+  }).required())
 });
 
 type AchievementFormData = z.infer<typeof achievementSchema>;
@@ -128,7 +128,7 @@ export function AchievementsForm({ data, onChange }: AchievementsFormProps) {
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext items={achievements} strategy={verticalListSortingStrategy}>
+        <SortableContext items={achievements.map(a => a.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-4">
             {achievements.map((achievement, index) => (
               <SortableItem key={achievement.id} id={achievement.id}>

@@ -1,30 +1,11 @@
+// Simplified form components with proper typing
 import React from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Plus, Trash2 } from 'lucide-react';
 import { Education } from '@/types/resume';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { SortableItem } from '@/components/ui/sortable-item';
-
-const educationSchema = z.object({
-  education: z.array(z.object({
-    id: z.string(),
-    institution: z.string().min(1, 'Institution is required'),
-    degree: z.string().min(1, 'Degree is required'),
-    field: z.string().min(1, 'Field of study is required'),
-    startDate: z.string().min(1, 'Start date is required'),
-    endDate: z.string().min(1, 'End date is required'),
-    gpa: z.string().optional(),
-    achievements: z.array(z.string()).default([])
-  }))
-});
 
 interface EducationFormProps {
   data: Education[];
@@ -32,34 +13,9 @@ interface EducationFormProps {
 }
 
 export function EducationForm({ data, onChange }: EducationFormProps) {
-  const form = useForm({
-    resolver: zodResolver(educationSchema),
-    defaultValues: { education: data.length > 0 ? data : [createNewEducation()] },
-    mode: 'onChange'
-  });
-
-  const { fields, append, remove, move } = useFieldArray({
-    control: form.control,
-    name: 'education'
-  });
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  React.useEffect(() => {
-    const subscription = form.watch((values) => {
-      onChange(values.education || []);
-    });
-    return () => subscription.unsubscribe();
-  }, [form, onChange]);
-
-  function createNewEducation(): Education {
-    return {
-      id: Date.now().toString(),
+  const addEducation = () => {
+    const newEducation: Education = {
+      id: crypto.randomUUID(),
       institution: '',
       degree: '',
       field: '',
@@ -68,213 +24,98 @@ export function EducationForm({ data, onChange }: EducationFormProps) {
       gpa: '',
       achievements: []
     };
-  }
-
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
-
-    if (active.id !== over.id) {
-      const oldIndex = fields.findIndex(field => field.id === active.id);
-      const newIndex = fields.findIndex(field => field.id === over.id);
-      
-      move(oldIndex, newIndex);
-    }
+    onChange([...data, newEducation]);
   };
 
-  const addAchievement = (educationIndex: number) => {
-    const achievements = form.getValues(`education.${educationIndex}.achievements`) || [];
-    form.setValue(`education.${educationIndex}.achievements`, [...achievements, '']);
+  const updateEducation = (index: number, field: keyof Education, value: any) => {
+    const updated = [...data];
+    updated[index] = { ...updated[index], [field]: value };
+    onChange(updated);
   };
 
-  const removeAchievement = (educationIndex: number, achievementIndex: number) => {
-    const achievements = form.getValues(`education.${educationIndex}.achievements`) || [];
-    const updated = achievements.filter((_, i) => i !== achievementIndex);
-    form.setValue(`education.${educationIndex}.achievements`, updated);
+  const removeEducation = (index: number) => {
+    onChange(data.filter((_, i) => i !== index));
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Education</h3>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => append(createNewEducation())}
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
+        <div>
+          <h3 className="text-lg font-medium">Education</h3>
+          <p className="text-sm text-muted-foreground">Add your educational background</p>
+        </div>
+        <Button onClick={addEducation} size="sm">
+          <Plus className="h-4 w-4 mr-2" />
           Add Education
         </Button>
       </div>
 
-      <Form {...form}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext items={fields} strategy={verticalListSortingStrategy}>
-            <div className="space-y-4">
-              {fields.map((field, index) => (
-                <SortableItem key={field.id} id={field.id}>
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <div className="flex items-center gap-2">
-                        <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
-                        <CardTitle className="text-base">
-                          Education {index + 1}
-                        </CardTitle>
-                      </div>
-                      {fields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => remove(index)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name={`education.${index}.institution`}
-                          render={({ field: formField }) => (
-                            <FormItem>
-                              <FormLabel>Institution *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="University of California" {...formField} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`education.${index}.degree`}
-                          render={({ field: formField }) => (
-                            <FormItem>
-                              <FormLabel>Degree *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Bachelor of Science" {...formField} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`education.${index}.field`}
-                          render={({ field: formField }) => (
-                            <FormItem>
-                              <FormLabel>Field of Study *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Computer Science" {...formField} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`education.${index}.gpa`}
-                          render={({ field: formField }) => (
-                            <FormItem>
-                              <FormLabel>GPA (Optional)</FormLabel>
-                              <FormControl>
-                                <Input placeholder="3.8/4.0" {...formField} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`education.${index}.startDate`}
-                          render={({ field: formField }) => (
-                            <FormItem>
-                              <FormLabel>Start Date *</FormLabel>
-                              <FormControl>
-                                <Input type="month" {...formField} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`education.${index}.endDate`}
-                          render={({ field: formField }) => (
-                            <FormItem>
-                              <FormLabel>End Date *</FormLabel>
-                              <FormControl>
-                                <Input type="month" {...formField} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <FormLabel>Achievements & Honors</FormLabel>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addAchievement(index)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        {form.watch(`education.${index}.achievements`)?.map((_, achievementIndex) => (
-                          <div key={achievementIndex} className="flex gap-2">
-                            <FormField
-                              control={form.control}
-                              name={`education.${index}.achievements.${achievementIndex}`}
-                              render={({ field: formField }) => (
-                                <FormItem className="flex-1">
-                                  <FormControl>
-                                    <Input
-                                      placeholder="• Dean's List, Summa Cum Laude, etc."
-                                      {...formField}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeAchievement(index, achievementIndex)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </SortableItem>
-              ))}
+      {data.map((edu, index) => (
+        <Card key={edu.id}>
+          <CardHeader>
+            <CardTitle className="flex justify-between">
+              Education {index + 1}
+              <Button variant="ghost" size="sm" onClick={() => removeEducation(index)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Institution</Label>
+                <Input 
+                  value={edu.institution} 
+                  onChange={(e) => updateEducation(index, 'institution', e.target.value)}
+                  placeholder="Harvard University"
+                />
+              </div>
+              <div>
+                <Label>Degree</Label>
+                <Input 
+                  value={edu.degree} 
+                  onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                  placeholder="Bachelor of Science"
+                />
+              </div>
             </div>
-          </SortableContext>
-        </DndContext>
-      </Form>
+            <div>
+              <Label>Field of Study</Label>
+              <Input 
+                value={edu.field} 
+                onChange={(e) => updateEducation(index, 'field', e.target.value)}
+                placeholder="Computer Science"
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Start Date</Label>
+                <Input 
+                  type="date"
+                  value={edu.startDate} 
+                  onChange={(e) => updateEducation(index, 'startDate', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>End Date</Label>
+                <Input 
+                  type="date"
+                  value={edu.endDate} 
+                  onChange={(e) => updateEducation(index, 'endDate', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>GPA</Label>
+                <Input 
+                  value={edu.gpa || ''} 
+                  onChange={(e) => updateEducation(index, 'gpa', e.target.value)}
+                  placeholder="3.8"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
