@@ -1,127 +1,120 @@
-ResumeCraft
-   
-ResumeCraft is a modern web application designed to simplify the creation of professional, ATS-optimized resumes. With an intuitive drag-and-drop builder, customizable templates, and powerful optimization tools, ResumeCraft empowers job seekers to craft standout resumes effortlessly.
-Table of Contents
+# ResumeCraft
 
-Description
-Features
-Installation
-Usage
-Contributing
-License
-Contact
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![GitHub last commit](https://img.shields.io/github/last-commit/amanshow24/ResumeCraft.svg)](https://github.com/amanshow24/ResumeCraft/commits/main) [![GitHub stars](https://img.shields.io/github/stars/amanshow24/ResumeCraft.svg?style=social)](https://github.com/amanshow24/ResumeCraft/stargazers) [![GitHub forks](https://img.shields.io/github/forks/amanshow24/ResumeCraft.svg?style=social)](https://github.com/amanshow24/ResumeCraft/network/members)
 
-Description
-ResumeCraft is a user-friendly platform for creating and managing professional resumes. It offers a seamless experience for:
+## Table of Contents
 
-Building resumes with a drag-and-drop interface
-Selecting from a variety of professional templates
-Optimizing resumes for Applicant Tracking Systems (ATS)
-Securely managing and exporting resumes as PDFs
+- [Description](#description)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
-This project aims to streamline resume creation, helping users present their skills and experience effectively to land their dream jobs.
-Features
+## Description
 
-🔒 Secure Authentication: Register and log in to manage your resumes securely.
-📊 User Dashboard: Organize and view all your resumes in one place.
-🛠️ Drag-and-Drop Builder: Create and customize resumes with an intuitive interface.
-🎨 Professional Templates: Choose from a selection of sleek, customizable templates.
-📈 ATS Optimization: Analyze your resume for Applicant Tracking System compatibility.
-📑 PDF Export: Download your resume as a high-quality PDF.
-📧 Support Access: Get help via the in-app contact page.
+ResumeCraft is a resume-building application designed to help users create professional, ATS-optimized resumes. It provides a user-friendly interface for:
 
-Installation
-To set up ResumeCraft locally, follow these steps:
+- Building and editing resumes with a drag-and-drop editor
+- Selecting and customizing professional templates
+- Analyzing resumes for Applicant Tracking System compatibility
+- Securely storing and exporting resumes as PDFs
 
-Clone the Repository:
-git clone https://github.com/amanshow24/ResumeCraft.git
+This project aims to simplify resume creation, making it easier for users to present their skills and experience effectively.
 
+## Features
 
-Navigate to the Project Directory:
-cd ResumeCraft
+- 🛠️ **Resume Building**: Create and edit resumes with a drag-and-drop interface.
+- 🎨 **Template Selection**: Choose from a variety of professional templates.
+- 📈 **ATS Analysis**: Optimize resumes for Applicant Tracking Systems.
+- 🔒 **User Authentication**: Secure login system to protect resume data.
+- 📑 **PDF Export**: Export resumes in PDF format.
 
+## Installation
 
-Install Dependencies:
-npm install
+To install ResumeCraft, follow these steps:
 
-Note: If using Bun, run bun install instead.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/amanshow24/ResumeCraft.git
+   ```
 
-Set Up Environment Variables:
+2. Navigate to the project directory:
+   ```bash
+   cd ResumeCraft
+   ```
 
-Create a .env file in the root directory.
-Add Supabase credentials (refer to Supabase documentation):VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
 
+4. Set up environment variables:
+   - Create a `.env` file in the root directory.
+   - Add Supabase credentials (refer to Supabase documentation):
+     ```bash
+     VITE_SUPABASE_URL=your-supabase-url
+     VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+     ```
 
+5. Run the application:
+   ```bash
+   npm run dev
+   ```
 
+**Note**: Replace the environment variable setup with the actual requirements for your project.
 
-Run the Application:
-npm run dev
+## Usage
 
+1. **Register or Log In**:
+   - Create an account or log in to access your resume dashboard.
 
-Open http://localhost:5173 in your browser.
+2. **Create or Edit Resumes**:
+   - Use the dashboard to start a new resume or edit an existing one.
 
+3. **Build Your Resume**:
+   - Customize content with the drag-and-drop builder.
 
+4. **Select Templates**:
+   - Choose a professional template from the templates page.
 
-Usage
+5. **Analyze for ATS**:
+   - Use the analyzer tool to optimize your resume for ATS.
 
-Register or Log In:
+6. **Export Data**:
+   - Download your resume as a PDF.
 
-Create an account or log in to access your resume dashboard.
+**Note**: Customize this section with specific instructions for your application's user interface and functionality.  
+*(Optional: Add a screenshot of the application here, e.g., `![Screenshot](path/to/screenshot.png)`)*
 
+## Contributing
 
-Create or Edit Resumes:
-
-Use the dashboard to start a new resume or edit an existing one.
-
-
-Build Your Resume:
-
-Customize content using the drag-and-drop builder.
-
-
-Select a Template:
-
-Choose a professional template from the templates page.
-
-
-Optimize for ATS:
-
-Analyze your resume for ATS compatibility using the analyzer tool.
-
-
-Export to PDF:
-
-Download your completed resume as a PDF.
-
-
-Get Support:
-
-Visit the contact page for assistance.
-
-
-
-Note: Replace the screenshot path with an actual image of the ResumeCraft interface, if available.
-Contributing
 We welcome contributions to improve ResumeCraft! To contribute:
 
-Fork the repository.
-Create a new branch:git checkout -b feature/your-feature-name
+1. Fork the repository.
+2. Create a new branch for your feature or fix:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. Make your changes and commit:
+   ```bash
+   git commit -m 'Add some feature'
+   ```
+4. Push your branch:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+5. Submit a pull request.
 
+Please ensure your code follows the project's coding standards and includes tests where applicable.
 
-Make your changes and commit:git commit -m 'Add some feature'
+## License
 
+This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md) file for details.
 
-Push your branch:git push origin feature/your-feature-name
+## Contact
 
-
-Submit a pull request.
-
-Please ensure your code adheres to the project's ESLint and TypeScript standards.
-License
-This project is licensed under the MIT License. See the LICENSE.md file for details.
-Contact
 For questions, feedback, or support, please contact:
-
-Email: amanshow9800@gmail.com
-GitHub: amanshow24
+- Email: [amanshow9800@gmail.com](mailto:amanshow9800@gmail.com)
+- GitHub: [amanshow24](https://github.com/amanshow24)
