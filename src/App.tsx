@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { AuthProvider } from '@/hooks/useAuth';
 import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -21,10 +22,11 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <DndProvider backend={HTML5Backend}>
-        <Router>
-          <div className="min-h-screen flex flex-col bg-background">
-            <Header />
+      <AuthProvider>
+        <DndProvider backend={HTML5Backend}>
+          <Router>
+            <div className="min-h-screen flex flex-col bg-background">
+              <Header />
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<Index />} />
@@ -59,12 +61,13 @@ function App() {
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<Navigate to="/404" replace />} />
               </Routes>
-            </main>
-            <Footer />
-          </div>
-          <Toaster />
-        </Router>
-      </DndProvider>
+              </main>
+              <Footer />
+            </div>
+            <Toaster />
+          </Router>
+        </DndProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
