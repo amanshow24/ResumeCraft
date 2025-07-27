@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Eye, Download, Star, Users, Briefcase, Palette, Crown } from 'lucide-react';
 
 const templates = [
@@ -67,12 +68,60 @@ export default function TemplatesPage() {
     ? templates 
     : templates.filter(template => template.category === selectedCategory);
 
-  const handleUseTemplate = (templateId: string) => {
+  const handleUseTemplate = async (templateId: string) => {
     if (!user) {
       navigate('/auth');
       return;
     }
-    navigate(`/resume/new?template=${templateId}`);
+    
+    try {
+      // Create a new blank resume in Supabase with the selected template
+      const newResume = {
+        title: 'New Resume',
+        template: templateId,
+        data: {
+          personalInfo: {
+            fullName: '',
+            email: user.email || '',
+            phone: '',
+            location: '',
+            website: '',
+            linkedin: '',
+            github: '',
+            summary: ''
+          },
+          education: [],
+          experience: [],
+          skills: [],
+          achievements: [],
+          customSections: [],
+          theme: {
+            fontFamily: 'inter' as const,
+            primaryColor: '#2563eb',
+            headingSize: 'md' as const,
+            template: templateId as any
+          }
+        } as any,
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from('resumes')
+        .insert([newResume])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Navigate to the resume builder with the new resume ID
+      navigate(`/resume/${data.id}`);
+    } catch (error) {
+      console.error('Error creating new resume:', error);
+      // Fallback to the old method if there's an error
+      navigate(`/resume/new?template=${templateId}`);
+    }
   };
 
   const handlePreviewTemplate = (templateId: string) => {
