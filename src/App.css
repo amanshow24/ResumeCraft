@@ -1,9 +1,11 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  margin: 0;
+  padding: 0;
+  text-align: left; /* or keep center if you prefer */
+  width: 100%;
+  max-width: 100%; /* Ensure it takes full width */
 }
+
 
 .logo {
   height: 6em;

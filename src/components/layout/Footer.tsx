@@ -11,19 +11,19 @@ export function Footer() {
     {
       name: 'GitHub',
       icon: Github,
-      href: 'https://github.com',
+      href: 'https://github.com/amanshow24',
       label: 'Follow us on GitHub'
     },
     {
       name: 'LinkedIn',
       icon: Linkedin,
-      href: 'https://linkedin.com',
+      href: 'https://www.linkedin.com/in/aman-kumar-show-a5589b290',
       label: 'Follow us on LinkedIn'
     },
     {
       name: 'Twitter',
       icon: Twitter,
-      href: 'https://twitter.com',
+      href: 'https://twitter.com/amanshow2005',
       label: 'Follow us on Twitter'
     }
   ];

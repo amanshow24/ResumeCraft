@@ -88,7 +88,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="font-medium">Email</p>
-                      <p className="text-sm text-muted-foreground">support@resumecraft.com</p>
+                      <p className="text-sm text-muted-foreground">amanshow9800@gmail.com</p>
                     </div>
                   </div>
                   
@@ -98,7 +98,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="font-medium">Phone</p>
-                      <p className="text-sm text-muted-foreground">+1 (555) 123-4567</p>
+                      <p className="text-sm text-muted-foreground">+91 9999999999</p>
                     </div>
                   </div>
                   
@@ -109,8 +109,8 @@ export default function ContactPage() {
                     <div>
                       <p className="font-medium">Address</p>
                       <p className="text-sm text-muted-foreground">
-                        123 Resume Street<br />
-                        San Francisco, CA 94102
+                        Beleghata<br />
+                        Kolkata, WB, 700010
                       </p>
                     </div>
                   </div>
