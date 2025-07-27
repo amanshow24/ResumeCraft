@@ -6,9 +6,9 @@ export async function generateAISummary(personalInfo: PersonalInfo): Promise<str
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   const summaries = [
-    `Experienced professional with strong background in ${personalInfo.firstName ? 'technology and innovation' : 'business development'}, bringing expertise in strategic planning, team leadership, and project management. Proven track record of delivering results and driving organizational growth.`,
+    `Experienced professional with strong background in ${personalInfo.fullName ? 'technology and innovation' : 'business development'}, bringing expertise in strategic planning, team leadership, and project management. Proven track record of delivering results and driving organizational growth.`,
     
-    `Dynamic ${personalInfo.firstName ? 'professional' : 'individual'} with comprehensive experience in cross-functional collaboration and process optimization. Skilled at identifying opportunities for improvement and implementing solutions that enhance operational efficiency and customer satisfaction.`,
+    `Dynamic ${personalInfo.fullName ? 'professional' : 'individual'} with comprehensive experience in cross-functional collaboration and process optimization. Skilled at identifying opportunities for improvement and implementing solutions that enhance operational efficiency and customer satisfaction.`,
     
     `Results-driven professional with demonstrated ability to manage complex projects and lead high-performing teams. Strong analytical skills combined with excellent communication abilities, with a focus on achieving measurable business outcomes and fostering collaborative work environments.`
   ];

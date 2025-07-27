@@ -1,27 +1,42 @@
 import React from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Trash2, Plus, GripVertical } from 'lucide-react';
 import { Achievement } from '@/types/resume';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { SortableItem } from '@/components/ui/sortable-item';
 
-const achievementsSchema = z.object({
+const achievementSchema = z.object({
   achievements: z.array(z.object({
     id: z.string(),
     title: z.string().min(1, 'Title is required'),
     organization: z.string().optional(),
     date: z.string().min(1, 'Date is required'),
-    description: z.string().min(1, 'Description is required')
+    description: z.string().min(1, 'Description is required'),
   }))
 });
+
+type AchievementFormData = z.infer<typeof achievementSchema>;
 
 interface AchievementsFormProps {
   data: Achievement[];
@@ -29,15 +44,10 @@ interface AchievementsFormProps {
 }
 
 export function AchievementsForm({ data, onChange }: AchievementsFormProps) {
-  const form = useForm({
-    resolver: zodResolver(achievementsSchema),
-    defaultValues: { achievements: data.length > 0 ? data : [createNewAchievement()] },
+  const form = useForm<AchievementFormData>({
+    resolver: zodResolver(achievementSchema),
+    defaultValues: { achievements: data },
     mode: 'onChange'
-  });
-
-  const { fields, append, remove, move } = useFieldArray({
-    control: form.control,
-    name: 'achievements'
   });
 
   const sensors = useSensors(
@@ -49,14 +59,20 @@ export function AchievementsForm({ data, onChange }: AchievementsFormProps) {
 
   React.useEffect(() => {
     const subscription = form.watch((values) => {
-      onChange(values.achievements || []);
+      if (values.achievements) {
+        onChange(values.achievements as Achievement[]);
+      }
     });
     return () => subscription.unsubscribe();
   }, [form, onChange]);
 
+  React.useEffect(() => {
+    form.setValue('achievements', data);
+  }, [data, form]);
+
   function createNewAchievement(): Achievement {
     return {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       title: '',
       organization: '',
       date: '',
@@ -64,132 +80,161 @@ export function AchievementsForm({ data, onChange }: AchievementsFormProps) {
     };
   }
 
-  const handleDragEnd = (event: any) => {
+  const addAchievement = () => {
+    const currentAchievements = form.getValues('achievements');
+    const newAchievement = createNewAchievement();
+    form.setValue('achievements', [...currentAchievements, newAchievement]);
+  };
+
+  const removeAchievement = (index: number) => {
+    const currentAchievements = form.getValues('achievements');
+    form.setValue('achievements', currentAchievements.filter((_, i) => i !== index));
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over.id) {
-      const oldIndex = fields.findIndex(field => field.id === active.id);
-      const newIndex = fields.findIndex(field => field.id === over.id);
-      
-      move(oldIndex, newIndex);
+    if (over && active.id !== over.id) {
+      const achievements = form.getValues('achievements');
+      const activeIndex = achievements.findIndex(item => item.id === active.id);
+      const overIndex = achievements.findIndex(item => item.id === over.id);
+
+      if (activeIndex !== -1 && overIndex !== -1) {
+        const reorderedAchievements = arrayMove(achievements, activeIndex, overIndex);
+        form.setValue('achievements', reorderedAchievements);
+      }
     }
   };
+
+  const achievements = form.watch('achievements');
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Achievements & Awards</h3>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => append(createNewAchievement())}
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
+        <div>
+          <h3 className="text-lg font-medium">Achievements & Awards</h3>
+          <p className="text-sm text-muted-foreground">
+            Add your professional achievements, awards, and recognitions
+          </p>
+        </div>
+        <Button type="button" onClick={addAchievement} size="sm">
+          <Plus className="h-4 w-4 mr-2" />
           Add Achievement
         </Button>
       </div>
 
-      <Form {...form}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext items={fields} strategy={verticalListSortingStrategy}>
-            <div className="space-y-4">
-              {fields.map((field, index) => (
-                <SortableItem key={field.id} id={field.id}>
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <div className="flex items-center gap-2">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={achievements} strategy={verticalListSortingStrategy}>
+          <div className="space-y-4">
+            {achievements.map((achievement, index) => (
+              <SortableItem key={achievement.id} id={achievement.id}>
+                <Card>
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base flex items-center gap-2">
                         <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
-                        <CardTitle className="text-base">
-                          Achievement {index + 1}
-                        </CardTitle>
-                      </div>
-                      {fields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => remove(index)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name={`achievements.${index}.title`}
-                          render={({ field: formField }) => (
-                            <FormItem>
-                              <FormLabel>Title *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Employee of the Year" {...formField} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                        Achievement {index + 1}
+                      </CardTitle>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeAchievement(index)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor={`achievement-title-${index}`}>
+                          Title *
+                        </Label>
+                        <Input
+                          id={`achievement-title-${index}`}
+                          {...form.register(`achievements.${index}.title`)}
+                          placeholder="e.g., Employee of the Year"
                         />
-
-                        <FormField
-                          control={form.control}
-                          name={`achievements.${index}.organization`}
-                          render={({ field: formField }) => (
-                            <FormItem>
-                              <FormLabel>Organization</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Tech Corp" {...formField} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`achievements.${index}.date`}
-                          render={({ field: formField }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel>Date *</FormLabel>
-                              <FormControl>
-                                <Input type="month" {...formField} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <FormField
-                        control={form.control}
-                        name={`achievements.${index}.description`}
-                        render={({ field: formField }) => (
-                          <FormItem>
-                            <FormLabel>Description *</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Brief description of the achievement and its impact..."
-                                {...formField}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                        {form.formState.errors.achievements?.[index]?.title && (
+                          <p className="text-sm text-destructive">
+                            {form.formState.errors.achievements[index]?.title?.message}
+                          </p>
                         )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor={`achievement-organization-${index}`}>
+                          Organization
+                        </Label>
+                        <Input
+                          id={`achievement-organization-${index}`}
+                          {...form.register(`achievements.${index}.organization`)}
+                          placeholder="e.g., Microsoft"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor={`achievement-date-${index}`}>
+                        Date *
+                      </Label>
+                      <Input
+                        id={`achievement-date-${index}`}
+                        type="date"
+                        {...form.register(`achievements.${index}.date`)}
                       />
-                    </CardContent>
-                  </Card>
-                </SortableItem>
-              ))}
+                      {form.formState.errors.achievements?.[index]?.date && (
+                        <p className="text-sm text-destructive">
+                          {form.formState.errors.achievements[index]?.date?.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor={`achievement-description-${index}`}>
+                        Description *
+                      </Label>
+                      <Textarea
+                        id={`achievement-description-${index}`}
+                        {...form.register(`achievements.${index}.description`)}
+                        placeholder="Describe your achievement and its impact..."
+                        rows={3}
+                      />
+                      {form.formState.errors.achievements?.[index]?.description && (
+                        <p className="text-sm text-destructive">
+                          {form.formState.errors.achievements[index]?.description?.message}
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </SortableItem>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      {achievements.length === 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                No achievements added yet. Click "Add Achievement" to get started.
+              </p>
+              <Button type="button" onClick={addAchievement} variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Your First Achievement
+              </Button>
             </div>
-          </SortableContext>
-        </DndContext>
-      </Form>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

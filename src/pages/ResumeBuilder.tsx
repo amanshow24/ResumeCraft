@@ -75,7 +75,7 @@ export default function ResumeBuilder() {
       if (error) throw error;
 
       if (data) {
-        setResumeData(data.data);
+        setResumeData(data.data as unknown as ResumeData);
         setTemplate(data.template);
         setTitle(data.title);
       }
@@ -100,7 +100,7 @@ export default function ResumeBuilder() {
       const resumePayload = {
         title,
         template,
-        data: resumeData,
+        data: resumeData as any,
         user_id: user.id,
         updated_at: new Date().toISOString()
       };
